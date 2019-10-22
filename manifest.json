@@ -1,6 +1,6 @@
 {
-  "name": "Application",
-  "description": "An application for Aragon",
+  "name": "Simple Prediction Market",
+  "description": "A Simple Prediction Market leveraging AragonOS",
   "icons": [
     {
       "src": "/images/icon.png",
