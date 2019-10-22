@@ -1,6 +1,11 @@
 pragma solidity ^0.4.24;
 
-contract PredictionMarket {
+import "@aragon/os/contracts/apps/AragonApp.sol";
+
+contract PredictionMarket is AragonApp {
+
+    // Roles
+    bytes32 constant public OWNER_ROLE = keccak256("OWNER_ROLE");
 
     // Data Structures
     enum OrderType {Buy, Sell }
@@ -35,7 +40,11 @@ contract PredictionMarket {
     event Payout(address user, uint amount);
 
     // constructor
-    function PredictionMarket (uint duration) public payable {
+    function PredictionMarket () external payable {
+    }
+
+    function initialize(uint duration) onlyInit external payable {
+        initialized();
         require(msg.value > 0);
         owner = msg.sender;
         deadline =  now + duration;
@@ -43,9 +52,9 @@ contract PredictionMarket {
         collateral = msg.value;
     }
 
-// ---------------------------------- Public methods ---------------------------------- //
+// ---------------------------------- external methods ---------------------------------- //
 
-    function orderBuy (uint price) public payable {
+    function orderBuy (uint price) external payable {
         require(now < deadline);
         require(msg.value > 0);
         require(price >= 0);
@@ -56,7 +65,7 @@ contract PredictionMarket {
         OrderPlaced(counter, msg.sender, OrderType.Buy, amount, price);
     }
 
-    function orderSell (uint price, uint amount) public {
+    function orderSell (uint price, uint amount) external {
         require(now < deadline);
         require(shares[msg.sender] >= amount);
         require(price >= 0);
@@ -67,7 +76,7 @@ contract PredictionMarket {
         OrderPlaced(counter, msg.sender, OrderType.Sell, amount, price);
     }
 
-    function tradeBuy (uint orderId) public payable {
+    function tradeBuy (uint orderId) external payable {
         Order storage order = orders[orderId];
         require(now < deadline);
         require(order.user != msg.sender);
@@ -88,7 +97,7 @@ contract PredictionMarket {
         TradeMatched(orderId, msg.sender, amount);
     }
 
-    function tradeSell (uint orderId, uint amount) public {
+    function tradeSell (uint orderId, uint amount) external {
         Order storage order = orders[orderId];
         require(now < deadline);
         require(order.user != msg.sender);
@@ -109,7 +118,7 @@ contract PredictionMarket {
         TradeMatched(orderId, msg.sender, amount);
     }
 
-    function cancelOrder (uint orderId) public {
+    function cancelOrder (uint orderId) external {
         Order storage order = orders[orderId];
         require(order.user == msg.sender);
         if (order.orderType == OrderType.Buy)
@@ -120,7 +129,7 @@ contract PredictionMarket {
         OrderCanceled(orderId);
     }
 
-    function resolve (bool _result) public {
+    function resolve (bool _result) auth(OWNER_ROLE) external{
         require(now > deadline);
         require(msg.sender == owner);
         require(result == Result.Open);
@@ -129,7 +138,7 @@ contract PredictionMarket {
             balances[owner] += collateral;
     }
 
-    function withdraw () public {
+    function withdraw () external {
         uint payout = balances[msg.sender];
         balances[msg.sender] = 0;
         if (result == Result.Yes) {
