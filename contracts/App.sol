@@ -38,6 +38,7 @@ contract PredictionMarket is AragonApp {
     event TradeMatched(uint orderId, address user, uint amount);
     event OrderCanceled(uint orderId);
     event Payout(address user, uint amount);
+    event changeOwner(address newOwner);
 
     // constructor
     function PredictionMarket () external payable {
@@ -169,5 +170,13 @@ contract PredictionMarket is AragonApp {
         msg.sender.transfer(payout);
         Payout(msg.sender, payout);
     }
+
+    /**
+    * @notice change owner
+     */
+     function changeOwner(address newOwner) auth(OWNER_ROLE) external {
+         owner = newOwner;
+         changeOwner(newOwner);
+     }
 
 }
