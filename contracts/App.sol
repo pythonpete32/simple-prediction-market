@@ -54,6 +54,9 @@ contract PredictionMarket is AragonApp {
 
 // ---------------------------------- external methods ---------------------------------- //
 
+    /**
+     * @notice create a buy order
+     */
     function orderBuy (uint price) external payable {
         require(now < deadline);
         require(msg.value > 0);
@@ -65,6 +68,9 @@ contract PredictionMarket is AragonApp {
         OrderPlaced(counter, msg.sender, OrderType.Buy, amount, price);
     }
 
+    /**
+     * @notice create a sell order
+     */
     function orderSell (uint price, uint amount) external {
         require(now < deadline);
         require(shares[msg.sender] >= amount);
@@ -76,6 +82,9 @@ contract PredictionMarket is AragonApp {
         OrderPlaced(counter, msg.sender, OrderType.Sell, amount, price);
     }
 
+    /**
+     * @notice fill a buy order
+     */
     function tradeBuy (uint orderId) external payable {
         Order storage order = orders[orderId];
         require(now < deadline);
@@ -97,6 +106,9 @@ contract PredictionMarket is AragonApp {
         TradeMatched(orderId, msg.sender, amount);
     }
 
+    /**
+     * @notice fill a sell order
+     */
     function tradeSell (uint orderId, uint amount) external {
         Order storage order = orders[orderId];
         require(now < deadline);
@@ -118,6 +130,9 @@ contract PredictionMarket is AragonApp {
         TradeMatched(orderId, msg.sender, amount);
     }
 
+    /**
+     * @notice cancel a order
+     */
     function cancelOrder (uint orderId) external {
         Order storage order = orders[orderId];
         require(order.user == msg.sender);
@@ -129,6 +144,9 @@ contract PredictionMarket is AragonApp {
         OrderCanceled(orderId);
     }
 
+    /**
+     * @notice resolve market. The DAO its self is the oralce
+     */
     function resolve (bool _result) auth(OWNER_ROLE) external{
         require(now > deadline);
         require(msg.sender == owner);
@@ -138,6 +156,9 @@ contract PredictionMarket is AragonApp {
             balances[owner] += collateral;
     }
 
+    /**
+     * @notice withdraw funds
+     */
     function withdraw () external {
         uint payout = balances[msg.sender];
         balances[msg.sender] = 0;
